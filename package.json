@@ -1,0 +1,31 @@
+{
+  "name": "sistema_de_ponto_eletronico",
+  "version": "1.0.0",
+  "description": "Sistema geral de ponto eletrônico para controle de entrada e saída de funcionários usando QR Code",
+  "keywords": [
+    "Ponto",
+    "Eletrônico",
+    "QR",
+    "Code",
+    "Controle",
+    "de",
+    "Fluxo",
+    "de",
+    "Funcionários"
+  ],
+  "homepage": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code#readme",
+  "bugs": {
+    "url": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code.git"
+  },
+  "license": "ISC",
+  "author": "SpectreSolution Tm.",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
