@@ -1,0 +1,52 @@
+{
+  "name": "sistema_de_ponto_eletronico",
+  "version": "1.0.0",
+  "description": "Sistema geral de ponto eletrônico para controle de entrada e saída de funcionários usando QR Code",
+  "keywords": [
+    "Ponto",
+    "Eletrônico",
+    "QRCode",
+    "Controle",
+    "Fluxo",
+    "Funcionários"
+  ],
+  "homepage": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code#readme",
+  "bugs": {
+    "url": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code.git"
+  },
+  "license": "ISC",
+  "author": "SpectreSolution Tm.",
+  "type": "commonjs",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "migrate": "node src/config/database.js",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "seed": "node src/config/seed.js",
+    "docker:build": "docker build -t ponto-eletronico .",
+    "docker:run": "docker run -p 3000:3000 ponto-eletronico"
+  },
+  "devDependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "geolib": "^3.3.4",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "qrcode": "^1.5.4"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
+}
