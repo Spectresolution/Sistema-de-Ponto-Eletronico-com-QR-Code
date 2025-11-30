@@ -7,7 +7,7 @@ const gerarQRCodeSession = async (req, res) => {
     const { local_trabalho_id } = req.body;
 
     // Verificar se local existe e está ativo
-    const localResult = await pool.query(
+    const localResult = await pool.get().query(
       'SELECT id, nome_local FROM local_trabalho WHERE id = $1 AND ativo = true',
       [local_trabalho_id]
     );
@@ -21,7 +21,7 @@ const gerarQRCodeSession = async (req, res) => {
     const expires_at = new Date(Date.now() + 2 * 60 * 1000); // 2 minutos
 
     // Criar sessão
-    const sessionResult = await pool.query(
+    const sessionResult = await pool.get().query(
       `INSERT INTO qrcode_session (session_token, local_trabalho_id, expires_at) 
        VALUES ($1, $2, $3) 
        RETURNING id, session_token, expires_at`,
@@ -57,7 +57,7 @@ const validarQRCode = async (req, res) => {
   try {
     const { session_token } = req.body;
 
-    const result = await pool.query(
+    const result = await pool.get().query(
       `SELECT qs.*, lt.nome_local 
        FROM qrcode_session qs 
        JOIN local_trabalho lt ON qs.local_trabalho_id = lt.id 

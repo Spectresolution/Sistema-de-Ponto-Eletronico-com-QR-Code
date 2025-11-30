@@ -7,7 +7,7 @@ const { marcarPonto, getPontosHoje, getHistorico } = require('../controllers/pon
 const { gerarQRCodeSession, validarQRCode } = require('../controllers/qrcodeController');
 
 // Middleware
-const { authMiddleware, adminMiddleware, gestorMiddleware } = require('../middleware/auth');
+const { authMiddleware, adminMiddleware, gestorMiddleware } = require('../middlewares/auth');
 
 // Rotas públicas
 router.post('/auth/login', login);

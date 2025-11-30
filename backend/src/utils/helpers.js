@@ -24,11 +24,15 @@ const generateToken = (user) => {
 
 // Validar localização
 const validarLocalizacao = (lat1, lon1, lat2, lon2, raioMaximo) => {
-  const distance = getDistance(
-    { latitude: lat1, longitude: lon1 },
-    { latitude: lat2, longitude: lon2 }
-  );
-  return distance <= raioMaximo;
+  try {
+    const distance = getDistance(
+      { latitude: lat1, longitude: lon1 },
+      { latitude: lat2, longitude: lon2 }
+    );
+    return distance <= raioMaximo;
+  } catch (error) {
+    return false;
+  }
 };
 
 // Gerar QR Code
@@ -40,45 +44,10 @@ const gerarQRCode = async (data) => {
   }
 };
 
-// Calcular horas trabalhadas
-const calcularHorasTrabalhadas = (registros) => {
-  let totalMinutos = 0;
-  let entrada = null;
-  
-  for (const registro of registros) {
-    switch (registro.tipo_registro) {
-      case 'ENTRADA':
-        entrada = new Date(registro.timestamp_registro);
-        break;
-      case 'INICIO_INTERVALO':
-        if (entrada) {
-          totalMinutos += (new Date(registro.timestamp_registro) - entrada) / 60000;
-          entrada = null;
-        }
-        break;
-      case 'FIM_INTERVALO':
-        entrada = new Date(registro.timestamp_registro);
-        break;
-      case 'SAIDA':
-        if (entrada) {
-          totalMinutos += (new Date(registro.timestamp_registro) - entrada) / 60000;
-          entrada = null;
-        }
-        break;
-    }
-  }
-  
-  const horas = Math.floor(totalMinutos / 60);
-  const minutos = Math.floor(totalMinutos % 60);
-  
-  return { horas, minutos, totalMinutos };
-};
-
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   validarLocalizacao,
-  gerarQRCode,
-  calcularHorasTrabalhadas
+  gerarQRCode
 };

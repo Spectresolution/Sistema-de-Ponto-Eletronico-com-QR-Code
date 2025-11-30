@@ -11,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
     
-    const result = await pool.query(
+    const result = await pool.get().query(
       'SELECT id, nome, email, is_admin, is_gestor, ativo FROM funcionario WHERE id = $1',
       [decoded.id]
     );

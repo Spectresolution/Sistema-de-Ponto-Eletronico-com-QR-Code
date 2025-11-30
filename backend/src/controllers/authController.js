@@ -9,7 +9,7 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
 
-    const result = await pool.query(
+    const result = await pool.get().query(
       `SELECT id, nome, email, senha_hash, is_admin, is_gestor, ativo, cargo 
        FROM funcionario WHERE email = $1`,
       [email]
@@ -55,7 +55,7 @@ const criarFuncionario = async (req, res) => {
 
     const senhaHash = await hashPassword(senha);
 
-    const result = await pool.query(
+    const result = await pool.get().query(
       `INSERT INTO funcionario 
        (nome, email, senha_hash, cpf, cargo, departamento, jornada_padrao_horas, data_contratacao, is_admin, is_gestor, gestor_id) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 

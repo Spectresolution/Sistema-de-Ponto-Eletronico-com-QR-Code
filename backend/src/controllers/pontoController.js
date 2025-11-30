@@ -2,7 +2,7 @@ const { pool } = require('../config/database');
 const { validarLocalizacao } = require('../utils/helpers');
 
 const marcarPonto = async (req, res) => {
-  const client = await pool.connect();
+  const client = await pool.get().connect();
   
   try {
     await client.query('BEGIN');
@@ -38,37 +38,6 @@ const marcarPonto = async (req, res) => {
       return res.status(400).json({ 
         error: 'Fora do local autorizado para marcação',
         detalhes: `Você está fora do raio de ${session.raio_tolerancia_metros}m do local autorizado`
-      });
-    }
-
-    // Validar sequência lógica
-    const ultimoRegistro = await client.query(
-      `SELECT tipo_registro FROM registro_ponto 
-       WHERE funcionario_id = $1 AND DATE(timestamp_registro) = CURRENT_DATE 
-       ORDER BY timestamp_registro DESC LIMIT 1`,
-      [funcionario_id]
-    );
-
-    if (ultimoRegistro.rows.length > 0) {
-      const ultimoTipo = ultimoRegistro.rows[0].tipo_registro;
-      const sequenciasValidas = {
-        'ENTRADA': ['INICIO_INTERVALO', 'SAIDA'],
-        'INICIO_INTERVALO': ['FIM_INTERVALO'],
-        'FIM_INTERVALO': ['SAIDA', 'INICIO_INTERVALO'],
-        'SAIDA': ['ENTRADA']
-      };
-
-      if (!sequenciasValidas[ultimoTipo]?.includes(tipo_registro)) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ 
-          error: 'Sequência de ponto inválida',
-          detalhes: `Não é possível marcar ${tipo_registro} após ${ultimoTipo}`
-        });
-      }
-    } else if (tipo_registro !== 'ENTRADA') {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ 
-        error: 'Primeira marcação deve ser ENTRADA' 
       });
     }
 
@@ -109,7 +78,7 @@ const getPontosHoje = async (req, res) => {
   try {
     const funcionario_id = req.user.id;
 
-    const result = await pool.query(
+    const result = await pool.get().query(
       `SELECT id, timestamp_registro, tipo_registro, observacoes
        FROM registro_ponto 
        WHERE funcionario_id = $1 AND DATE(timestamp_registro) = CURRENT_DATE 
@@ -131,7 +100,7 @@ const getHistorico = async (req, res) => {
     const targetMonth = mes || new Date().getMonth() + 1;
     const targetYear = ano || new Date().getFullYear();
 
-    const result = await pool.query(
+    const result = await pool.get().query(
       `SELECT DATE(timestamp_registro) as data, 
               tipo_registro, 
               timestamp_registro,
@@ -161,4 +130,4 @@ const getHistorico = async (req, res) => {
   }
 };
 
-module.exports = { marcarPonto, getPontosHoje, getHistorico };
+module.exports = { marcarPonto, getPontosHoje, getHistorico };  
