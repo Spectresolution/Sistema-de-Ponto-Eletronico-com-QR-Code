@@ -1,3 +1,7 @@
+# DESCRIÇÃO
+
+Sistema de ponto eletrônico, utilizando QR-Code, para controle de entrada e saída de funcionários. Em andamento... 
+
 # 🔐 API ENDPOINTS COMPLETOS
 ## 1. Autenticação & Segurança (/api/auth)
 ```javascript
