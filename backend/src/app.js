@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const { createTables } = require('./config/database');
-const routes = require('./routes');
+// Importe do NOVO setupDatabase.js (que só cria tabelas)
+const { createTables } = require('./config/setupDatabase');
+const routes = require('./routes/mainRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +29,10 @@ app.get('/health', (req, res) => {
 // Inicialização
 const startServer = async () => {
   try {
+    // 1. Criar tabelas (se não existirem)
     await createTables();
+    
+    // 2. Iniciar servidor
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`📱 API disponível em: http://localhost:${PORT}/api`);

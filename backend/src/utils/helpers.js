@@ -38,9 +38,37 @@ const validarLocalizacao = (lat1, lon1, lat2, lon2, raioMaximo) => {
 // Gerar QR Code
 const gerarQRCode = async (data) => {
   try {
-    return await QRCode.toDataURL(JSON.stringify(data));
+    // Verificar se data já é string
+    let qrData;
+    
+    if (typeof data === 'string') {
+      // Se for string, verificar se já é JSON válido
+      try {
+        JSON.parse(data); // Testar se é JSON válido
+        qrData = data; // Já é JSON string, usar diretamente
+      } catch {
+        qrData = data; // Não é JSON, usar como string normal
+      }
+    } else {
+      // Se for objeto, converter para JSON
+      qrData = JSON.stringify(data);
+    }
+    
+    console.log('📱 Gerando QR Code:');
+    console.log('   Tipo:', typeof data);
+    console.log('   Conteúdo:', qrData.length > 100 ? qrData.substring(0, 100) + '...' : qrData);
+    
+    const qrCode = await QRCode.toDataURL(qrData, {
+      errorCorrectionLevel: 'H', // Alta correção de erro
+      width: 300,
+      margin: 1
+    });
+    
+    console.log('   QR Code gerado:', qrCode.substring(0, 50) + '...');
+    return qrCode;
   } catch (error) {
-    throw new Error('Erro ao gerar QR Code');
+    console.error('❌ Erro ao gerar QR Code:', error);
+    throw new Error('Erro ao gerar QR Code: ' + error.message);
   }
 };
 

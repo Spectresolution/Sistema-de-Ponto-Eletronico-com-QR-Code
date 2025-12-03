@@ -7,89 +7,127 @@ const marcarPonto = async (req, res) => {
   try {
     await client.query('BEGIN');
     
-    const { session_token, latitude, longitude, tipo_registro, foto_base64, dispositivo_info } = req.body;
+    const { session_token, latitude, longitude, tipo_registro } = req.body;
     const funcionario_id = req.user.id;
 
-    // Validar sessão QR Code
+    console.log('=== MARCANDO PONTO ===');
+
     const sessionResult = await client.query(
-      `SELECT qs.*, lt.latitude, lt.longitude, lt.raio_tolerancia_metros 
+      `SELECT qs.*, lt.latitude, lt.longitude, lt.raio_tolerancia_metros, lt.nome_local 
        FROM qrcode_session qs 
        JOIN local_trabalho lt ON qs.local_trabalho_id = lt.id 
-       WHERE qs.session_token = $1 AND qs.expires_at > NOW() AND NOT qs.used`,
+       WHERE qs.session_token = ? 
+         AND qs.used = 0 
+         AND qs.expires_at > (strftime('%s', 'now') * 1000)`,
       [session_token]
     );
 
     if (sessionResult.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'QR Code inválido ou expirado' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'QR Code inválido, expirado ou já utilizado'
+      });
     }
 
     const session = sessionResult.rows[0];
 
-    // Validar localização
-    const localizacaoValida = validarLocalizacao(
-      latitude, longitude,
-      session.latitude, session.longitude,
-      session.raio_tolerancia_metros
-    );
+    if (session.latitude && session.longitude && latitude && longitude) {
+      const raio = session.raio_tolerancia_metros || 100;
+      const localizacaoValida = validarLocalizacao(
+        latitude, longitude,
+        session.latitude, session.longitude,
+        raio
+      );
 
-    if (!localizacaoValida) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ 
-        error: 'Fora do local autorizado para marcação',
-        detalhes: `Você está fora do raio de ${session.raio_tolerancia_metros}m do local autorizado`
-      });
+      if (!localizacaoValida) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ 
+          success: false,
+          error: `Fora do raio permitido (${raio}m)`
+        });
+      }
     }
 
-    // Marcar QR Code como usado
     await client.query(
-      'UPDATE qrcode_session SET used = true WHERE session_token = $1',
+      'UPDATE qrcode_session SET used = 1 WHERE session_token = ?',
       [session_token]
     );
 
-    // Salvar registro de ponto
     const registroResult = await client.query(
       `INSERT INTO registro_ponto 
        (funcionario_id, tipo_registro, latitude_marcada, longitude_marcada, 
-        local_validado_id, qrcode_session_id, dispositivo_info) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        local_validado_id, qrcode_session_id) 
+       VALUES (?, ?, ?, ?, ?, ?) 
        RETURNING id, timestamp_registro, tipo_registro`,
-      [funcionario_id, tipo_registro, latitude, longitude, 
-       session.local_trabalho_id, session.id, dispositivo_info]
+      [funcionario_id, 
+       tipo_registro || 'entrada', 
+       latitude || null, 
+       longitude || null, 
+       session.local_trabalho_id, 
+       session.id]
     );
 
     await client.query('COMMIT');
+    
+    const registro = registroResult.rows[0];
 
     res.json({
-      message: 'Ponto registrado com sucesso',
-      registro: registroResult.rows[0]
+      success: true,
+      message: getMensagemTipo(tipo_registro),
+      registro: registro,
+      local: session.nome_local,
+      data_hora: registro.timestamp_registro
     });
 
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Erro ao marcar ponto:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    try { await client.query('ROLLBACK'); } catch (e) {}
+    
+    console.error('❌ Erro ao marcar ponto:', error.message);
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor'
+    });
   } finally {
     client.release();
   }
+};
+
+const getMensagemTipo = (tipo) => {
+  const mensagens = {
+    'entrada': 'Entrada registrada com sucesso',
+    'saída': 'Saída registrada com sucesso',
+    'saida': 'Saída registrada com sucesso',
+    'intervalo': 'Início de intervalo',
+    'retorno': 'Retorno do intervalo'
+  };
+  return mensagens[tipo] || 'Ponto registrado';
 };
 
 const getPontosHoje = async (req, res) => {
   try {
     const funcionario_id = req.user.id;
 
-    const result = await pool.get().query(
+    const result = await pool.query(
       `SELECT id, timestamp_registro, tipo_registro, observacoes
        FROM registro_ponto 
-       WHERE funcionario_id = $1 AND DATE(timestamp_registro) = CURRENT_DATE 
+       WHERE funcionario_id = ? AND DATE(timestamp_registro) = date('now')
        ORDER BY timestamp_registro ASC`,
       [funcionario_id]
     );
 
-    res.json({ registros: result.rows });
+    res.json({ 
+      success: true,
+      registros: result.rows,
+      total: result.rows.length 
+    });
   } catch (error) {
     console.error('Erro ao buscar pontos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor' 
+    });
   }
 };
 
@@ -97,37 +135,101 @@ const getHistorico = async (req, res) => {
   try {
     const funcionario_id = req.user.id;
     const { mes, ano } = req.query;
-    const targetMonth = mes || new Date().getMonth() + 1;
-    const targetYear = ano || new Date().getFullYear();
+    
+    const dataAtual = new Date();
+    const targetMonth = mes || dataAtual.getMonth() + 1;
+    const targetYear = ano || dataAtual.getFullYear();
 
-    const result = await pool.get().query(
-      `SELECT DATE(timestamp_registro) as data, 
-              tipo_registro, 
-              timestamp_registro,
-              observacoes
+    const result = await pool.query(
+      `SELECT 
+         id,
+         timestamp_registro,
+         tipo_registro,
+         observacoes,
+         strftime('%Y-%m-%d', timestamp_registro) as data
        FROM registro_ponto 
-       WHERE funcionario_id = $1 
-         AND EXTRACT(MONTH FROM timestamp_registro) = $2 
-         AND EXTRACT(YEAR FROM timestamp_registro) = $3 
+       WHERE funcionario_id = ? 
+         AND strftime('%m', timestamp_registro) = ? 
+         AND strftime('%Y', timestamp_registro) = ? 
        ORDER BY timestamp_registro ASC`,
-      [funcionario_id, targetMonth, targetYear]
+      [funcionario_id, 
+       targetMonth.toString().padStart(2, '0'), 
+       targetYear.toString()]
     );
 
-    // Agrupar por data
     const registrosPorData = {};
     result.rows.forEach(registro => {
-      const data = registro.data.toISOString().split('T')[0];
+      const data = registro.data;
       if (!registrosPorData[data]) {
         registrosPorData[data] = [];
       }
       registrosPorData[data].push(registro);
     });
 
-    res.json({ historico: registrosPorData });
+    res.json({ 
+      success: true,
+      historico: registrosPorData,
+      mes: targetMonth,
+      ano: targetYear
+    });
   } catch (error) {
     console.error('Erro ao buscar histórico:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor' 
+    });
   }
 };
 
-module.exports = { marcarPonto, getPontosHoje, getHistorico };  
+const getTodosRegistros = async (req, res) => {
+  try {
+    if (!req.user.is_admin) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Acesso negado' 
+      });
+    }
+
+    const { data, funcionario_id } = req.query;
+
+    let query = `
+      SELECT rp.*, u.nome as funcionario_nome, lt.nome_local
+      FROM registro_ponto rp
+      JOIN funcionario u ON rp.funcionario_id = u.id
+      JOIN local_trabalho lt ON rp.local_validado_id = lt.id
+      WHERE 1=1
+    `;
+    
+    let params = [];
+
+    if (data) {
+      query += ` AND DATE(rp.timestamp_registro) = ?`;
+      params.push(data);
+    }
+
+    if (funcionario_id) {
+      query += ` AND rp.funcionario_id = ?`;
+      params.push(funcionario_id);
+    }
+
+    query += ` ORDER BY rp.timestamp_registro DESC LIMIT 100`;
+
+    const result = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      registros: result.rows
+    });
+
+  } catch (error) {
+    console.error('Erro:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { 
+  marcarPonto, 
+  getPontosHoje, 
+  getHistorico,
+  getTodosRegistros 
+};
