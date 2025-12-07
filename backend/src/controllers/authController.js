@@ -6,7 +6,6 @@ const login = async (req, res) => {
     const { email, senha } = req.body;
 
     console.log('🔐 Tentando login para:', email);
-    console.log('📦 Body recebido:', { email, senha: '***' });
 
     if (!email || !senha) {
       console.log('❌ Faltando email ou senha');
@@ -52,11 +51,9 @@ const login = async (req, res) => {
     }
 
     console.log('🔑 Verificando senha...');
-    console.log('   Hash no banco (início):', user.senha_hash.substring(0, 30) + '...');
-    
+  
     const senhaValida = await comparePassword(senha, user.senha_hash);
-    console.log('   Senha válida?', senhaValida ? '✅ SIM' : '❌ NÃO');
-
+    
     if (!senhaValida) {
       console.log('❌ Senha incorreta para:', user.email);
       return res.status(401).json({ 
@@ -67,17 +64,14 @@ const login = async (req, res) => {
 
     console.log('🎫 Gerando token...');
     const token = generateToken(user);
-    console.log('✅ Token gerado (início):', token.substring(0, 50) + '...');
-
+   
     console.log('✅ Login bem-sucedido para:', user.email);
 
-    // RESPOSTA MELHORADA - Com token completo para copiar
+    // RESPOSTA Com token completo
     res.json({
       success: true,
       message: 'Login realizado com sucesso',
       token: token, // Token COMPLETO para copiar
-      token_info: `Bearer ${token.substring(0, 50)}...`, // Para ver no log
-      copy_paste: `Authorization: Bearer ${token}`, // Para copiar e colar
       user: {
         id: user.id,
         nome: user.nome,
@@ -98,7 +92,6 @@ const login = async (req, res) => {
     res.status(500).json({ 
       success: false,
       error: 'Erro interno do servidor',
-      debug: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

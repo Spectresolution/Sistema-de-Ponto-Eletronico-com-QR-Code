@@ -157,7 +157,7 @@ ponto-eletronico/
 │   │   ├── models/
 │   │   ├── routes/
 │   │   ├── middleware/
-|   |   ├── models
+|   |   ├── models/
 │   │   ├── config/
 │   │   ├── utils/
 │   │   └── app.js

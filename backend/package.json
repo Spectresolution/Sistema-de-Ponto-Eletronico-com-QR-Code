@@ -32,7 +32,8 @@
     "lint:fix": "eslint src/ --fix",
     "seed": "node src/config/seed.js",
     "docker:build": "docker build -t ponto-eletronico .",
-    "docker:run": "docker run -p 3000:3000 ponto-eletronico"
+    "docker:run": "docker run -p 3000:3000 ponto-eletronico",
+    "reset-database": "node src/resetDatabase.js"
   },
   "devDependencies": {
     "axios": "^1.13.2",
