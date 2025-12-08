@@ -345,7 +345,7 @@ Para suporte, abra uma issue no GitHub ou entre em contato com a equipe de desen
 
 # Me Patrocine 🥹
 
-[Visite meu sponsors e me dá uma forcinha](https://github.com/sponsors/Pucapuka)
+Visite meu [sponsors](https://github.com/sponsors/Pucapuka) e me dá uma forcinha
 ou via pix solucoes.magic.ti@gmail.com
 
 Última atualização: 7 de Dezembro 2025
