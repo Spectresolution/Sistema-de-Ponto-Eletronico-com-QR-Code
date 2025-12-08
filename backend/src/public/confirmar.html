@@ -1,0 +1,534 @@
+<!-- backend/public/confirmar.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Ponto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .success {
+            color: #4CAF50;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .card p {
+            margin: 10px 0;
+            color: #555;
+        }
+        
+        .card strong {
+            color: #333;
+        }
+        
+        .info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .device-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .comprovante {
+            background: #e8f5e9;
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .comprovante h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+        
+        .comprovante-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>📍 Sistema de Ponto</h1>
+            <p>Confirmação de Registro</p>
+        </div>
+        
+        <!-- Tela de Login -->
+        <div id="loginScreen">
+            <div class="card">
+                <h3>🔐 Faça seu Login</h3>
+                <p>Digite suas credenciais para registrar o ponto</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" placeholder="seu.email@empresa.com" v-model="email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" placeholder="Sua senha" v-model="senha">
+            </div>
+            
+            <button class="btn" @click="login">Entrar</button>
+            <div class="error" v-if="loginError">{{ loginError }}</div>
+        </div>
+        
+        <!-- Tela de Confirmação -->
+        <div id="confirmScreen" class="hidden">
+            <div class="card">
+                <h3>✅ Confirmar {{ pontoData.tipo | capitalize }}?</h3>
+                <p><strong>Local:</strong> {{ pontoData.local }}</p>
+                <p><strong>Horário:</strong> {{ pontoData.horario }}</p>
+                <p><strong>Data:</strong> {{ pontoData.data }}</p>
+                <p><strong>Funcionário:</strong> {{ usuario.nome }}</p>
+            </div>
+            
+            <div v-if="primeiroAcesso" class="device-warning">
+                <h4>📱 Registrar este dispositivo?</h4>
+                <p>Para facilitar seus próximos acessos, autorize este dispositivo.</p>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autorizar" v-model="autorizarDispositivo">
+                    <label for="autorizar">Sim, autorizar este dispositivo ({{ deviceInfo }})</label>
+                </div>
+            </div>
+            
+            <button class="btn btn-success" @click="confirmarPonto">
+                ✅ Confirmar {{ pontoData.tipo | capitalize }}
+            </button>
+            <button class="btn btn-secondary" @click="cancelar" style="margin-top: 10px;">
+                ❌ Cancelar
+            </button>
+        </div>
+        
+        <!-- Tela de Sucesso -->
+        <div id="successScreen" class="hidden">
+            <div class="comprovante">
+                <div class="comprovante-icon">✅</div>
+                <h2>Ponto Registrado!</h2>
+                
+                <p><strong>Comprovante:</strong> #{{ comprovante.id }}</p>
+                <p><strong>Funcionário:</strong> {{ comprovante.funcionario }}</p>
+                <p><strong>Tipo:</strong> {{ comprovante.tipo }}</p>
+                <p><strong>Horário:</strong> {{ comprovante.data_hora }}</p>
+                <p><strong>Local:</strong> {{ comprovante.local }}</p>
+                
+                <div class="info">
+                    <p>Guarde este comprovante para referência futura.</p>
+                </div>
+                
+                <button class="btn" onclick="window.close()" style="margin-top: 20px;">
+                    Fechar Janela
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tela de Loading -->
+        <div id="loadingScreen" class="hidden loading">
+            <div class="loading-spinner"></div>
+            <p>{{ loadingMessage }}</p>
+        </div>
+        
+        <!-- Tela de Erro -->
+        <div id="errorScreen" class="hidden">
+            <div class="card" style="border-color: #f44336;">
+                <h3 style="color: #f44336;">❌ Erro</h3>
+                <p id="errorMessage"></p>
+                <button class="btn btn-danger" onclick="window.location.reload()" style="margin-top: 20px;">
+                    Tentar Novamente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script>
+        const API_URL = '/api'; // Mesmo domínio
+        const { createApp } = Vue;
+        
+        const app = createApp({
+            data() {
+                return {
+                    email: '',
+                    senha: '',
+                    loginError: '',
+                    qrToken: null,
+                    pontoData: {
+                        tipo: 'entrada',
+                        local: 'Carregando...',
+                        horario: new Date().toLocaleTimeString('pt-BR'),
+                        data: new Date().toLocaleDateString('pt-BR')
+                    },
+                    usuario: {
+                        nome: '',
+                        email: ''
+                    },
+                    primeiroAcesso: true,
+                    autorizarDispositivo: true,
+                    deviceInfo: '',
+                    comprovante: {},
+                    webToken: localStorage.getItem('ponto_web_token'),
+                    loadingMessage: 'Processando...',
+                    qrValido: false
+                };
+            },
+            async mounted() {
+                // Obter token da URL
+                const urlParams = new URLSearchParams(window.location.search);
+                this.qrToken = urlParams.get('token');
+                
+                if (!this.qrToken) {
+                    this.mostrarErro('QR Code inválido ou expirado. Escaneie novamente.');
+                    return;
+                }
+                
+                // Gerar ID do dispositivo
+                this.deviceInfo = await this.generateDeviceId();
+                
+                // Verificar se já está logado
+                if (this.webToken) {
+                    try {
+                        this.mostrarTela('loadingScreen');
+                        this.loadingMessage = 'Verificando sessão...';
+                        
+                        const response = await fetch(`${API_URL}/ponto/verificar-sessao`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ web_token: this.webToken })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.valid) {
+                            this.usuario.nome = data.user.nome;
+                            this.primeiroAcesso = false;
+                            this.carregarDadosPonto();
+                            this.mostrarTela('confirmScreen');
+                        } else {
+                            localStorage.removeItem('ponto_web_token');
+                            this.mostrarTela('loginScreen');
+                        }
+                    } catch (error) {
+                        console.log('Sessão expirada');
+                        this.mostrarTela('loginScreen');
+                    }
+                } else {
+                    this.mostrarTela('loginScreen');
+                }
+            },
+            methods: {
+                async generateDeviceId() {
+                    // Gera ID único baseado em características do navegador
+                    const components = [
+                        navigator.userAgent,
+                        navigator.platform,
+                        screen.width + 'x' + screen.height,
+                        navigator.language,
+                        new Date().getTimezoneOffset()
+                    ];
+                    
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(components.join('|'));
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 12);
+                },
+                
+                mostrarTela(tela) {
+                    ['loginScreen', 'confirmScreen', 'successScreen', 'loadingScreen', 'errorScreen'].forEach(t => {
+                        document.getElementById(t).classList.add('hidden');
+                    });
+                    document.getElementById(tela).classList.remove('hidden');
+                },
+                
+                mostrarErro(mensagem) {
+                    document.getElementById('errorMessage').textContent = mensagem;
+                    this.mostrarTela('errorScreen');
+                },
+                
+                async carregarDadosPonto() {
+                    try {
+                        // Verificar se QR Code é válido
+                        const verificarRes = await fetch(`${API_URL}/qrcode/verificar`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_token: this.qrToken })
+                        });
+                        
+                        const verificarData = await verificarRes.json();
+                        
+                        if (!verificarData.available) {
+                            this.mostrarErro('QR Code inválido ou já utilizado. Escaneie um novo código.');
+                            return;
+                        }
+                        
+                        // Obter informações do QR Code
+                        const infoRes = await fetch(`${API_URL}/qrcode/info?token=${this.qrToken}`);
+                        if (infoRes.ok) {
+                            const infoData = await infoRes.json();
+                            this.pontoData.local = infoData.data.local_nome;
+                            this.qrValido = infoData.data.valid;
+                        }
+                    } catch (error) {
+                        console.error('Erro ao carregar dados:', error);
+                    }
+                },
+                
+                async login() {
+                    this.mostrarTela('loadingScreen');
+                    this.loadingMessage = 'Validando credenciais...';
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/ponto/login-web`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: this.email,
+                                senha: this.senha,
+                                device_hash: this.autorizarDispositivo ? this.deviceInfo : null
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            localStorage.setItem('ponto_web_token', data.web_token);
+                            this.webToken = data.web_token;
+                            this.usuario = data.user;
+                            this.carregarDadosPonto();
+                            this.mostrarTela('confirmScreen');
+                        } else {
+                            this.mostrarTela('loginScreen');
+                            this.loginError = data.error || 'Erro ao fazer login';
+                        }
+                    } catch (error) {
+                        this.mostrarTela('loginScreen');
+                        this.loginError = 'Erro de conexão com o servidor';
+                    }
+                },
+                
+                async confirmarPonto() {
+                    if (!this.qrValido) {
+                        alert('QR Code inválido. Escaneie novamente.');
+                        return;
+                    }
+                    
+                    this.mostrarTela('loadingScreen');
+                    this.loadingMessage = 'Registrando ponto...';
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/ponto/registrar-web`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                session_token: this.qrToken,
+                                web_token: this.webToken
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.comprovante = data.comprovante;
+                            this.mostrarTela('successScreen');
+                        } else {
+                            alert('Erro: ' + data.error);
+                            this.mostrarTela('confirmScreen');
+                        }
+                    } catch (error) {
+                        this.mostrarErro('Erro ao confirmar ponto. Tente novamente.');
+                    }
+                },
+                
+                cancelar() {
+                    if (confirm('Deseja realmente cancelar o registro?')) {
+                        window.close();
+                    }
+                }
+            },
+            filters: {
+                capitalize(value) {
+                    if (!value) return '';
+                    return value.charAt(0).toUpperCase() + value.slice(1);
+                }
+            }
+        }).mount('body');
+    </script>
+</body>
+</html>

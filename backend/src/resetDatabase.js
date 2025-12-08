@@ -1,4 +1,4 @@
-// reset-database.js (na pasta backend)
+// resetDatabase.js - VERSÃO COMPLETA
 const { db } = require('./config/database');
 const bcrypt = require('bcryptjs');
 
@@ -15,10 +15,10 @@ async function resetDatabase() {
       db.run('DROP TABLE IF EXISTS local_trabalho');
       db.run('DROP TABLE IF EXISTS funcionario');
       
-      // 2. Criar tabelas novamente (seu setupDatabase.js atualizado)
+      // 2. Criar TODAS as tabelas
       console.log('🏗️  Criando tabelas...');
       
-      // Tabela funcionario COM is_gestor
+      // Tabela funcionario
       db.run(`
         CREATE TABLE funcionario (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +41,7 @@ async function resetDatabase() {
         )
       `);
       
-      // Outras tabelas (mantenha como está no seu setupDatabase.js)
+      // Tabela local_trabalho
       db.run(`
         CREATE TABLE local_trabalho (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,11 +50,60 @@ async function resetDatabase() {
           latitude REAL NOT NULL,
           longitude REAL NOT NULL,
           raio_tolerancia_metros INTEGER DEFAULT 100,
-          ativo BOOLEAN DEFAULT 1
+          ativo BOOLEAN DEFAULT 1,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
       
-      // ... outras tabelas (qrcode_session, registro_ponto, solicitacao_ajuste)
+      // Tabela qrcode_session
+      db.run(`
+        CREATE TABLE qrcode_session (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_token TEXT UNIQUE NOT NULL,
+          local_trabalho_id INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL,
+          used BOOLEAN DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (local_trabalho_id) REFERENCES local_trabalho(id)
+        )
+      `);
+      
+      // Tabela registro_ponto
+      db.run(`
+        CREATE TABLE registro_ponto (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          funcionario_id INTEGER NOT NULL,
+          timestamp_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+          tipo_registro TEXT NOT NULL,
+          latitude_marcada REAL,
+          longitude_marcada REAL,
+          local_validado_id INTEGER,
+          qrcode_session_id INTEGER,
+          observacoes TEXT,
+          FOREIGN KEY (funcionario_id) REFERENCES funcionario(id),
+          FOREIGN KEY (local_validado_id) REFERENCES local_trabalho(id),
+          FOREIGN KEY (qrcode_session_id) REFERENCES qrcode_session(id)
+        )
+      `);
+      
+      // Tabela solicitacao_ajuste (opcional)
+      db.run(`
+        CREATE TABLE solicitacao_ajuste (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          funcionario_id INTEGER NOT NULL,
+          registro_ponto_id INTEGER,
+          data_alvo TEXT NOT NULL,
+          hora_solicitada TEXT,
+          tipo_ajuste TEXT NOT NULL,
+          justificativa TEXT NOT NULL,
+          status TEXT DEFAULT 'PENDENTE',
+          data_solicitacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (funcionario_id) REFERENCES funcionario(id),
+          FOREIGN KEY (registro_ponto_id) REFERENCES registro_ponto(id)
+        )
+      `);
+      
+      console.log('✅ Todas tabelas criadas');
       
       // 3. Criar admin inicial
       console.log('👑 Criando admin inicial...');
@@ -71,16 +120,27 @@ async function resetDatabase() {
             } else {
               console.log('✅ Admin criado! ID:', this.lastID);
               
-              // 4. Verificar
-              db.all('SELECT id, nome, email, is_admin, is_gestor, ativo FROM funcionario', (err, rows) => {
+              // 4. Verificar todas as tabelas
+              db.all("SELECT name FROM sqlite_master WHERE type='table'", (err, tables) => {
                 if (err) {
-                  console.error('❌ Erro ao verificar:', err.message);
+                  console.error('❌ Erro ao verificar tabelas:', err.message);
                   reject(err);
                 } else {
                   console.log('\n📋 Banco de dados resetado com sucesso!');
-                  console.log('👥 Funcionários no sistema:');
-                  rows.forEach(r => console.log(`- ${r.id}: ${r.nome} (${r.email}) Admin:${r.is_admin} Gestor:${r.is_gestor}`));
-                  resolve();
+                  console.log('📊 Tabelas criadas:');
+                  tables.forEach(t => console.log(`   - ${t.name}`));
+                  
+                  // Mostrar admin
+                  db.all('SELECT id, nome, email, is_admin, is_gestor FROM funcionario', (err, rows) => {
+                    if (err) {
+                      console.error('❌ Erro ao verificar funcionários:', err.message);
+                      reject(err);
+                    } else {
+                      console.log('\n👥 Funcionários no sistema:');
+                      rows.forEach(r => console.log(`   - ${r.id}: ${r.nome} (${r.email}) Admin:${r.is_admin} Gestor:${r.is_gestor}`));
+                      resolve();
+                    }
+                  });
                 }
               });
             }

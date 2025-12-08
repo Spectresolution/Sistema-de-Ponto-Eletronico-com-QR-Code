@@ -62,25 +62,21 @@ POST    /api/relatorios/exportar     // Exportar em PDF/CSV
 # 📱 FLUXO DE MARCACAO COM QR CODE
 ```text
 
-1. ADMIN faz login → Obtém token JWT
-   ↓
-2. ADMIN gera QR Code via POST /api/qrcode/gerar
-   ↓
-3. QR Code contém: session_token (64 chars) + local_id + expires_at (10min)
-   ↓
-4. FUNCIONÁRIO faz login → Obtém seu token JWT
-   ↓
-5. FUNCIONÁRIO valida QR Code via POST /api/qrcode/validar
-   ↓
-6. BACKEND valida em sequência:
-   - ✅ Token JWT do funcionário válido
-   - ✅ QR Code não expirado (10min)
-   - ✅ QR Code não utilizado anteriormente
-   - ✅ Usuário está ativo no sistema
-   ↓
-7. Sistema marca como USADO e registra ponto automaticamente
-   ↓
-8. Retorna confirmação: "QR Code válido! Ponto registrado com sucesso"
+TERMINAL COLETIVO:
+1. POST /api/qrcode/gerar-publico
+2. Recebe QR Code com URL: http://localhost:3000/confirmar?token=abc123
+
+FUNCIONÁRIO (celular):
+1. Escaneia QR Code
+2. Abre página web /confirmar?token=abc123
+3. Faz login (primeira vez)
+4. Confirma ponto
+5. Ponto é registrado
+
+SERVIDOR:
+1. QR Code gerado com used=0
+2. Validação só verifica (não marca)
+3. Registro marca used=1
 ```
 
 # 🔒 VALIDAÇÕES DE SEGURANÇA

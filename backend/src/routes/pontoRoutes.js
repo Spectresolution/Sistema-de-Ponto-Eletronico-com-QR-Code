@@ -1,17 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { marcarPonto, getPontosHoje, getHistorico, getTodosRegistros } = require('../controllers/pontoController');
+const { 
+  marcarPonto, 
+  getPontosHoje, 
+  getHistorico, 
+  getTodosRegistros,
+  registrarPontoWeb,
+  loginWeb,
+  verificarSessaoWeb
+} = require('../controllers/pontoController');
 const { authMiddleware } = require('../middlewares/auth');
 
-// Todas as rotas exigem autenticação
-router.use(authMiddleware);
+// ========== ROTAS PÚBLICAS (para página web) ==========
+router.post('/login-web', loginWeb);
+router.post('/registrar-web', registrarPontoWeb);
+router.post('/verificar-sessao', verificarSessaoWeb);
 
-// Rotas de ponto
+// ========== ROTAS PROTEGIDAS (app com JWT) ==========
+router.use(authMiddleware); // Todas as rotas abaixo exigem autenticação
 router.post('/marcar', marcarPonto);
 router.get('/hoje', getPontosHoje);
 router.get('/historico', getHistorico);
-
-//apenas admin
 router.get('/todos', getTodosRegistros);
 
 module.exports = router;

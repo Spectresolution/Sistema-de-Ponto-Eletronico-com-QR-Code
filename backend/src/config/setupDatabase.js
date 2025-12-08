@@ -37,7 +37,8 @@ const createTables = async () => {
           latitude REAL NOT NULL,
           longitude REAL NOT NULL,
           raio_tolerancia_metros INTEGER DEFAULT 100,
-          ativo BOOLEAN DEFAULT 1
+          ativo BOOLEAN DEFAULT 1,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -47,7 +48,7 @@ const createTables = async () => {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           session_token TEXT UNIQUE NOT NULL,
           local_trabalho_id INTEGER NOT NULL,
-          expires_at DATETIME NOT NULL,
+          expires_at INTEGER NOT NULL, -- TIMESTAMP em milissegundos
           used BOOLEAN DEFAULT 0,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (local_trabalho_id) REFERENCES local_trabalho(id)
@@ -89,13 +90,40 @@ const createTables = async () => {
         )
       `);
 
-      // AGORA resolve a promise
+      // Tabela para dispositivos/autorização web
+      db.run(`
+        CREATE TABLE IF NOT EXISTS dispositivo_autorizacao (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          funcionario_id INTEGER NOT NULL,
+          device_hash TEXT NOT NULL,
+          user_agent TEXT,
+          data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          ultimo_acesso TIMESTAMP,
+          FOREIGN KEY (funcionario_id) REFERENCES funcionario(id),
+          UNIQUE(funcionario_id, device_hash)
+        )
+      `);
+
+      // Tabela para sessões web 
+      db.run(`
+        CREATE TABLE IF NOT EXISTS sessao_web (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          funcionario_id INTEGER NOT NULL,
+          session_token TEXT UNIQUE NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          device_hash TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (funcionario_id) REFERENCES funcionario(id)
+        )
+      `);
+      
+      // Verificar criação
       db.run('SELECT 1', (err) => {
         if (err) {
           console.error('❌ Erro ao criar tabelas:', err);
           reject(err);
         } else {
-          console.log('✅ Tabelas criadas com sucesso!');
+          console.log('✅ Tabelas criadas/verificadas com sucesso!');
           resolve();
         }
       });

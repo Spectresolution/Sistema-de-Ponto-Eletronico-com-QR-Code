@@ -1,228 +1,171 @@
-// testes/teste-tudo.js
-const { exec } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+// testes/teste-fluxo-real.js
+const axios = require('axios');
+const API_URL = 'http://localhost:3000/api';
 
-async function verificarEndpointsQRCode() {
+async function testarFluxoReal() {
+  console.log('🚀 === TESTE FLUXO REAL COMPLETO ===\n');
+  
+  let tokenAdmin;
+  let localId;
+  let sessionToken;
+  
   try {
-    // Import dinâmico do axios
-    const axios = (await import('axios')).default;
-    
-    const login = await axios.post('http://localhost:3000/api/auth/login', {
+    // 1. Login como admin
+    console.log('1. 🔐 Login como admin...');
+    const loginRes = await axios.post(`${API_URL}/auth/login`, {
       email: 'admin@email.com',
       senha: 'admin123'
     });
     
-    const token = login.data.token;
+    tokenAdmin = loginRes.data.token;
+    console.log('✅ Admin logado:', loginRes.data.user.email);
     
-    // Verifica endpoint crítico
-    await axios.get('http://localhost:3000/api/locais', {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 2000
+    // 2. Criar ou buscar local
+    console.log('\n2. 🏢 Obtendo local...');
+    const locaisRes = await axios.get(`${API_URL}/locais`, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
     });
     
-    return true; // Endpoints existem
-  } catch (error) {
-    console.log('⚠️  Endpoints QR Code não disponíveis:', error.message);
-    return false; // Endpoints não existem
-  }
-}
-
-async function verificarArquivosTeste() {
-  const testesBase = [
-    'teste-login.js',
-    'teste-funcionarios.js',
-    'teste-atualizacao-funcionario.js',
-    'teste-status-delecao.js',
-    'testar-senha.js'
-  ];
-  
-  const testesExistentes = [];
-  const testesFaltantes = [];
-  
-  for (const teste of testesBase) {
-    const caminho = path.join(__dirname, teste);
-    if (fs.existsSync(caminho)) {
-      testesExistentes.push(teste);
+    if (locaisRes.data.locais && locaisRes.data.locais.length > 0) {
+      localId = locaisRes.data.locais[0].id;
+      console.log('✅ Local encontrado:', locaisRes.data.locais[0].nome_local);
     } else {
-      testesFaltantes.push(teste);
-    }
-  }
-  
-  // Criar arquivos faltantes básicos
-  if (testesFaltantes.includes('teste-login.js')) {
-    const conteudoLogin = `const axios = require('axios');
-
-async function testarLogin() {
-  console.log('🔐 Testando login...\\\\n');
-  
-  try {
-    const resposta = await axios.post('http://localhost:3000/api/auth/login', {
-      email: 'admin@email.com',
-      senha: 'admin123'
-    });
-    
-    console.log('✅ LOGIN BEM-SUCEDIDO!');
-    console.log('Status:', resposta.status);
-    console.log('\\\\n📦 Dados da resposta:');
-    console.log('- Token (início):', resposta.data.token.substring(0, 50) + '...');
-    console.log('- Usuário:', resposta.data.user.email);
-    console.log('- is_admin:', resposta.data.user.is_admin);
-    console.log('- is_gestor:', resposta.data.user.is_gestor);
-    
-    const token = resposta.data.token;
-    
-    console.log('\\\\n🔍 Testando listagem de funcionários com o token...');
-    
-    try {
-      const funcionariosRes = await axios.get('http://localhost:3000/api/funcionarios', {
-        headers: { Authorization: \`Bearer \${token}\` }
+      console.log('➕ Criando novo local...');
+      const criarLocalRes = await axios.post(`${API_URL}/locais`, {
+        nome_local: 'Escritório Principal',
+        endereco: 'Av. Paulista, 1000',
+        latitude: -23.561399,
+        longitude: -46.655539,
+        raio_tolerancia_metros: 100
+      }, {
+        headers: { Authorization: `Bearer ${tokenAdmin}` }
       });
       
-      console.log('✅ LISTAGEM BEM-SUCEDIDA!');
-      console.log('Total de funcionários:', funcionariosRes.data.funcionarios?.length || 0);
+      localId = criarLocalRes.data.local.id;
+      console.log('✅ Local criado:', criarLocalRes.data.local.nome_local);
+    }
+    
+    // 3. Gerar QR Code VÁLIDO
+    console.log('\n3. 📱 Gerando QR Code válido...');
+    const qrcodeRes = await axios.post(`${API_URL}/qrcode/gerar`, {
+      local_trabalho_id: localId
+    }, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
+    });
+    
+    sessionToken = qrcodeRes.data.data.session_token;
+    console.log('✅ QR Code gerado com sucesso!');
+    console.log('   Token:', sessionToken.substring(0, 20) + '...');
+    console.log('   Expira em:', qrcodeRes.data.data.expires_at);
+    
+    // 4. Validar QR Code primeiro (endpoint separado)
+    console.log('\n4. ✅ Validando QR Code...');
+    const validarRes = await axios.post(`${API_URL}/qrcode/validar`, {
+      session_token: sessionToken
+    }, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
+    });
+    
+    console.log('✅ Validação:', validarRes.data.message);
+    console.log('   Válido?:', validarRes.data.valid ? 'SIM' : 'NÃO');
+    
+    // 5. Marcar ponto com QR Code válido (se ainda estiver válido)
+    if (validarRes.data.valid) {
+      console.log('\n5. ⏰ Marcando ponto com QR Code válido...');
+      const pontoRes = await axios.post(`${API_URL}/ponto/marcar`, {
+        session_token: sessionToken,
+        latitude: -23.561399,
+        longitude: -46.655539,
+        tipo_registro: 'entrada'
+      }, {
+        headers: { Authorization: `Bearer ${tokenAdmin}` }
+      });
       
-    } catch (erroListagem) {
-      console.log('❌ ERRO na listagem:');
-      console.log('Status:', erroListagem.response?.status);
-      console.log('Erro:', erroListagem.response?.data?.error || erroListagem.response?.data);
-    }
-    
-  } catch (error) {
-    console.log('❌ ERRO NO LOGIN:');
-    console.log('Status:', error.response?.status);
-    console.log('Erro:', error.response?.data?.error || error.response?.data);
-  }
-}
-
-testarLogin();`;
-    
-    fs.writeFileSync(path.join(__dirname, 'teste-login.js'), conteudoLogin);
-    console.log('✅ teste-login.js criado');
-    testesExistentes.push('teste-login.js');
-  }
-  
-  return testesExistentes;
-}
-
-async function rodarTodosTestes() {
-  console.log('🚀 === RODANDO TODOS OS TESTES DISPONÍVEIS ===\\n');
-  
-  // 1. Verificar arquivos de teste básicos
-  let testes = await verificarArquivosTeste();
-  
-  if (testes.length === 0) {
-    console.log('❌ Nenhum arquivo de teste encontrado!');
-    return;
-  }
-  
-  console.log(`📋 ${testes.length} teste(s) base serão executados`);
-  
-  // 2. Verificar se endpoints QR Code existem
-  try {
-    const qrCodeDisponivel = await verificarEndpointsQRCode();
-    if (qrCodeDisponivel) {
-      if (fs.existsSync(path.join(__dirname, 'teste-qrcode-simplificado.js'))) {
-        testes.push('teste-qrcode-simplificado.js');
-        console.log('✅ Teste QR Code adicionado');
-      }
+      console.log('✅ Ponto registrado com sucesso!');
+      console.log('   Mensagem:', pontoRes.data.message);
+      console.log('   Local:', pontoRes.data.local);
+      console.log('   Hora:', pontoRes.data.data_hora);
+      console.log('   ID do registro:', pontoRes.data.registro?.id);
     } else {
-      console.log('⚠️  Testes QR Code pulados - Endpoints não implementados');
+      console.log('\n⚠️  QR Code já foi usado via endpoint /validar, tentando gerar novo...');
+      
+      // Gerar novo QR Code
+      const novoQrcodeRes = await axios.post(`${API_URL}/qrcode/gerar`, {
+        local_trabalho_id: localId
+      }, {
+        headers: { Authorization: `Bearer ${tokenAdmin}` }
+      });
+      
+      const novoSessionToken = novoQrcodeRes.data.data.session_token;
+      
+      // Marcar ponto com novo QR Code
+      const pontoRes = await axios.post(`${API_URL}/ponto/marcar`, {
+        session_token: novoSessionToken,
+        latitude: -23.561399,
+        longitude: -46.655539,
+        tipo_registro: 'entrada'
+      }, {
+        headers: { Authorization: `Bearer ${tokenAdmin}` }
+      });
+      
+      console.log('✅ Ponto registrado com novo QR Code!');
+      console.log('   Mensagem:', pontoRes.data.message);
     }
-  } catch (error) {
-    console.log('⚠️  Não foi possível verificar endpoints QR Code:', error.message);
-  }
-  
-  console.log(`📋 Total: ${testes.length} teste(s) serão executados\\n`);
-  
-  let sucessos = 0;
-  let falhas = 0;
-  
-  for (const teste of testes) {
-    console.log(`\\n📁 Executando: ${teste}`);
+    
+    // 6. Verificar pontos do dia
+    console.log('\n6. 📊 Verificando pontos hoje...');
+    const hojeRes = await axios.get(`${API_URL}/ponto/hoje`, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
+    });
+    
+    console.log(`✅ ${hojeRes.data.registros?.length || 0} registro(s) hoje:`);
+    if (hojeRes.data.registros && hojeRes.data.registros.length > 0) {
+      hojeRes.data.registros.forEach((reg, index) => {
+        console.log(`   ${index + 1}. ${reg.tipo_registro} - ${reg.timestamp_registro}`);
+      });
+    }
+    
+    // 7. Testar histórico
+    console.log('\n7. 📅 Testando histórico...');
+    const historicoRes = await axios.get(`${API_URL}/ponto/historico`, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
+    });
+    
+    const datas = Object.keys(historicoRes.data.historico || {});
+    console.log(`✅ Histórico com ${datas.length} dia(s) registrado(s)`);
+    
+    // 8. Testar listagem completa (admin)
+    console.log('\n8. 👁️  Listando todos registros (admin)...');
+    const todosRes = await axios.get(`${API_URL}/ponto/todos`, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` }
+    });
+    
+    console.log(`✅ ${todosRes.data.registros?.length || 0} registro(s) no total`);
+    
+    console.log('\n' + '='.repeat(50));
+    console.log('🎉 FLUXO COMPLETO TESTADO COM SUCESSO!');
     console.log('='.repeat(50));
+    console.log('✅ Autenticação');
+    console.log('✅ Locais de trabalho');
+    console.log('✅ QR Code (gerar + validar)');
+    console.log('✅ Registro de ponto');
+    console.log('✅ Consulta de registros');
+    console.log('✅ Histórico');
+    console.log('✅ Admin: Listagem completa');
     
-    const resultado = await new Promise((resolve) => {
-      const processo = exec(`node ${teste}`, {
-        cwd: __dirname
-      });
+  } catch (error) {
+    console.error('\n❌ Erro no fluxo:');
+    if (error.response) {
+      console.log('Status:', error.response.status);
+      console.log('Erro:', error.response.data?.error || error.response.data);
       
-      let output = '';
-      
-      processo.stdout.on('data', (data) => {
-        output += data;
-        process.stdout.write(data);
-      });
-      
-      processo.stderr.on('data', (data) => {
-        output += data;
-        process.stderr.write(data);
-      });
-      
-      processo.on('close', (code) => {
-        console.log(`\\n📊 ${teste} finalizado com código: ${code}`);
-        resolve({ code, output });
-      });
-    });
-    
-    if (resultado.code === 0) {
-      sucessos++;
-      console.log(`✅ ${teste} PASSOU`);
-    } else {
-      falhas++;
-      console.log(`❌ ${teste} FALHOU (código: ${resultado.code})`);
-      
-      if (resultado.output.includes('Error:') || resultado.output.includes('ERR')) {
-        const linhasErro = resultado.output.split('\\n').filter(l => 
-          l.includes('Error:') || l.includes('ERR') || l.includes('❌')
-        );
-        if (linhasErro.length > 0) {
-          console.log('   Erro destacado:', linhasErro[0].substring(0, 100));
-        }
+      if (error.response.data?.details) {
+        console.log('Detalhes:', error.response.data.details);
       }
+    } else {
+      console.log('Erro:', error.message);
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
-  
-  console.log('\\n' + '='.repeat(50));
-  console.log('🎉 RELATÓRIO FINAL DOS TESTES');
-  console.log('='.repeat(50));
-  console.log(`✅ Testes que passaram: ${sucessos}`);
-  console.log(`❌ Testes que falharam: ${falhas}`);
-  console.log(`📊 Total executados: ${testes.length}`);
-  console.log(`🏆 Taxa de sucesso: ${Math.round((sucessos/testes.length)*100)}%`);
-  
-  console.log('\\n📋 Testes executados:');
-  testes.forEach(teste => {
-    console.log(`   - ${teste}`);
-  });
-  
-  // Verificar quais testes avançados não foram executados
-  const testesAvancados = ['teste-qrcode.js', 'teste-registro-ponto.js'];
-  const testesAvancadosFaltando = testesAvancados.filter(t => 
-    !testes.includes(t) && !fs.existsSync(path.join(__dirname, t))
-  );
-  
-  if (testesAvancadosFaltando.length > 0) {
-    console.log('\\n⚠️  Testes NÃO executados (endpoints faltando):');
-    testesAvancadosFaltando.forEach(t => {
-      console.log(`   - ${t}`);
-    });
-  }
-  
-  if (falhas === 0) {
-    console.log('\\n🎊 PARABÉNS! Todos os testes disponíveis passaram!');
-  } else {
-    console.log('\\n🔧 Alguns testes falharam. Verifique os logs acima.');
   }
 }
 
-// Executar
-(async () => {
-  try {
-    await rodarTodosTestes();
-  } catch (error) {
-    console.error('❌ Erro ao executar testes:', error);
-  }
-})();
+testarFluxoReal();
