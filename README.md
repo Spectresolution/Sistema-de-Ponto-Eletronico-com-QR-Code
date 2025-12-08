@@ -1,45 +1,77 @@
-# DESCRIÇÃO
+#  📍 Sistema de Ponto Eletrônico com QR Code
 
-Sistema de ponto eletrônico, utilizando QR-Code, para controle de entrada e saída de funcionários. Backend funcional com API REST completa implementada e testada.
+Sistema completo de controle de ponto eletrônico utilizando QR Code para registro de entrada e saída de funcionários. Backend funcional com API REST completa e interfaces web para terminal coletivo e confirmação.
 
-# 🔐  API ENDPOINTS IMPLEMENTADOS
-## 1. Autenticação & Segurança (/api/auth)
+## 🚀 Funcionalidades Principais
+
+### ✅ **Implementadas e Testadas**
+- **Autenticação JWT** com níveis de permissão (admin/gestor/funcionário)
+- **Gestão completa de funcionários** (CRUD com hierarquia)
+- **Gestão de locais de trabalho** com geolocalização
+- **Sistema de QR Code** com expiração e uso único
+- **Terminal coletivo** para geração de QR Codes públicos
+- **Página web de confirmação** com login e registro
+- **Registro de dispositivos autorizados** para segurança
+- **Histórico completo** de pontos por funcionário
+- **Validação de localização** (dentro do raio permitido)
+- **Interface administrativa** completa via API
+
+## 🔐  API ENDPOINTS IMPLEMENTADOS
+### 1. Autenticação & Segurança (/api/auth)
 ```javascript
 
 POST    /api/auth/login              // Login funcionário/admin - Retorna token JWT válido por 24h
 ```
-## 2. Sistema de QR Code Dinâmico (/api/qrcode) - IMPLEMENTADO E TESTADO
+### 2. Sistema de QR Code Dinâmico (/api/qrcode)
 ```javascript
 
-POST    /api/qrcode/gerar            // Admin: Gera novo QR code (validade 10min)
-POST    /api/qrcode/validar          // Funcionário: Valida QR code + registra ponto automaticamente
-GET     /api/qrcode/limpar-tokens    // Debug: Verifica status do token QR Code
+POST /api/qrcode/gerar // Admin: Gera QR Code (2 minutos)
+POST /api/qrcode/gerar-publico // Terminal: Gera QR Code público (5 minutos)
+POST /api/qrcode/validar // Valida QR Code (apenas verificação)
+POST /api/qrcode/verificar // Verifica disponibilidade do QR Code
+GET /api/qrcode/info // Obtém informações do QR Code
+GET /api/qrcode/limpar-tokens // Debug: Status de tokens
 ```
-## 3. Gestão de Funcionários (/api/funcionarios) - IMPLEMENTADO
+### 3. Gestão de Funcionários (/api/funcionarios)
 ```javascript
 
-GET     /api/funcionarios            // Listar funcionários (requer autenticação admin)
-POST    /api/funcionarios            // Criar novo funcionário (requer autenticação admin)
+GET /api/funcionarios // Listar todos funcionários (admin)
+POST /api/funcionarios // Criar novo funcionário (admin)
+GET /api/funcionarios/:id // Buscar funcionário por ID
+PUT /api/funcionarios/:id // Atualizar funcionário
+POST /api/funcionarios/:id/toggle // Ativar/desativar funcionário
 ```
-## 4. Gestão de Locais (/api/locais) - IMPLEMENTADO
+### 4. Gestão de Locais (/api/locais)
 ```javascript
 
-POST    /api/locais                  // Criar local de trabalho (requer autenticação admin)
+GET /api/locais // Listar todos locais ativos
+POST /api/locais // Criar novo local (admin)
 ```
 
-# Para implementações futuras
+### 5. **Registro de Ponto** (`/api/ponto`)
 
-## 5. Gestão de Locais (/api/locais)
+```javascript
+POST /api/ponto/marcar // App: Registra ponto com JWT
+POST /api/ponto/login-web // Web: Login para página de confirmação
+POST /api/ponto/registrar-web // Web: Registra ponto via página
+POST /api/ponto/verificar-sessao // Web: Verifica sessão ativa
+GET /api/ponto/hoje // Lista pontos do dia atual
+GET /api/ponto/historico // Histórico por mês/ano
+GET /api/ponto/todos // Admin: Todos registros
+
+```
+
+## Para implementações futuras
+
+### 6. Gestão de Locais (/api/locais)
 ```javascript
 
-GET     /api/locais                  // Listar todos
-POST    /api/locais                  // Criar novo
 PUT     /api/locais/:id              // Atualizar
 DELETE  /api/locais/:id              // Excluir (soft delete)
 GET     /api/locais/proximos         // Locais próximos às coordenadas
 ```
 
-## 6. Sistema de Ajustes (/api/ajustes)
+### 7. Sistema de Ajustes (/api/ajustes)
 ```javascript
 
 POST    /api/ajustes/solicitar       // Funcionário solicita ajuste
@@ -49,7 +81,7 @@ PUT     /api/ajustes/:id/aprovar     // Aprovar ajuste
 PUT     /api/ajustes/:id/rejeitar    // Rejeitar ajuste
 ```
 
-## 7. Relatórios & Analytics (/api/relatorios)
+### 8. Relatórios & Analytics (/api/relatorios)
 ```javascript
 
 GET     /api/relatorios/espelho      // Espelho de ponto
@@ -59,106 +91,256 @@ GET     /api/relatorios/gestao       // Para gestores: sua equipe
 POST    /api/relatorios/exportar     // Exportar em PDF/CSV
 ```
 
-# 📱 FLUXO DE MARCACAO COM QR CODE
-```text
+## 📱 FLUXO DE MARCACAO COM QR CODE
 
-TERMINAL COLETIVO:
-1. POST /api/qrcode/gerar-publico
-2. Recebe QR Code com URL: http://localhost:3000/confirmar?token=abc123
+### **Terminal Coletivo** (Tablet/Computador)
+1. Acessa `http://localhost:3000/terminal`
+2. Clique em "Gerar QR Code"
+3. QR Code é gerado com validade de 5 minutos
 
-FUNCIONÁRIO (celular):
-1. Escaneia QR Code
-2. Abre página web /confirmar?token=abc123
-3. Faz login (primeira vez)
-4. Confirma ponto
-5. Ponto é registrado
+### **Funcionário** (Celular)
+1. Escaneia QR Code com câmera
+2. Abre página `http://localhost:3000/confirmar?token=ABC123`
+3. **Primeira vez**: Faz login com e-mail e senha
+4. **Próximas vezes**: Reconhece dispositivo automaticamente
+5. Confirma registro (entrada/saída automático)
+6. Recebe comprovante digital
 
-SERVIDOR:
-1. QR Code gerado com used=0
-2. Validação só verifica (não marca)
-3. Registro marca used=1
-```
+### **Servidor** (Backend)
+1. Valida QR Code (não expirado, não utilizado)
+2. Identifica funcionário pela sessão web
+3. Determina tipo automático (entrada/saída)
+4. Registra ponto no banco de dados
+5. Marca QR Code como utilizado
 
-# 🔒 VALIDAÇÕES DE SEGURANÇA
 
-## 1. QR Code Dinâmico: Validade de 10 minutos, uso único
-## 2. Autenticação JWT: Tokens com expiração de 24 horas
-## 3. Controle de Acesso:
+# 🔒 MEDIDAS DE SEGURANÇA
+## 1. Autenticação
 
-   -  Apenas admin pode gerar QR Codes
-   -  Qualquer funcionário autenticado pode validar QR Codes
+- Tokens JWT com expiração de 24 horas
+- Senhas armazenadas com bcrypt (hash)
+- Middleware de autenticação em todas rotas protegidas
 
-## 4. Prevenção de Reuso: Cada session_token só pode ser usado uma vez
-## 5. Verificação de Estado: Usuário deve estar ativo (ativo = 1)
+## 2. QR Code Seguro
 
-# 🏗️ ESTRUTURA DO BANCO IMPLEMENTADA
-## Tabelas Principais:
-```sql
+- Tokens aleatórios de 32 caracteres alfanuméricos
+- Validade limitada (2-5 minutos)
+- Uso único por token
+- Verificação de expiração em milissegundos
 
--- funcionario: id, nome, email, senha_hash, is_admin, is_gestor, ativo, cargo, data_contratacao
--- local_trabalho: id, nome_local, endereco, latitude, longitude, raio_tolerancia_metros, ativo
--- qrcode_session: session_token (UNIQUE), local_trabalho_id, expires_at, used, created_at
--- registro_ponto: funcionario_id, timestamp_registro, tipo_registro, local_validado_id, qrcode_session_id
-```
-# ✅ TESTES REALIZADOS COM SUCESSO
+## 3. Controle de Acesso
 
-## ✅ Geração de QR Code: Admin gera QR Code com session_token único
-## ✅ Validação de QR Code: Funcionário valida e registra ponto
-## ✅ Prevenção de Reuso: Segundo uso do mesmo QR Code é bloqueado
-## ✅ Controle de Acesso: Apenas admin pode criar funcionários e locais
-## ✅ Expiração: QR Codes expiram após 10 minutos (configurável)
+- Hierarquia: Admin → Gestor → Funcionário
+- Permissões granularizadas por endpoint
+- Validação de status (ativo/inativo)
 
-# 🚀 PRÓXIMOS PASSOS RECOMENDADOS
+## 4. Validação de Localização
 
-## Backend:
+- Verificação de coordenadas GPS
+- Raio de tolerância configurável por local
+- Prevenção de "ponto amigo"
 
-1. Implementar geolocalização - Validar se funcionário está no local correto
-2. Adicionar registro de ponto manual - Para casos sem QR Code
-3. Implementar relatórios - Histórico de pontos por funcionário
-4. Sistema de ajustes - Solicitação de correção de ponto
 
-## Frontend/App:
-
-1. Dashboard Admin - Para geração de QR Codes e gestão
-2. App Mobile - Para funcionários escanearem QR Codes
-3. Página de confirmação - Após validação bem-sucedida
-
-## Admin Dashboard (React + TypeScript):
-
-- Gestão de usuários
-- Geração de QR Codes
-- Relatórios em tempo real
-- Aprovação de ajustes
-
-# 📋 STATUS ATUAL
-
-## Backend: ✅ Funcional e testado
-## API: ✅ Documentada e operacional
-## Banco de Dados: ✅ Estrutura completa
-## Segurança: ✅ Autenticação JWT implementada
-## Fluxo Principal: ✅ QR Code generation → validation → point registration
-
-O sistema está pronto para integração com frontend e aplicativo mobile.
-
-# Implementação
-
-## 1. Estrutura do Projeto
+# 🗄️ **ESTRUTURA DO BANCO DE DADOS**
 
 ```text
+
+funcionario                # Dados dos funcionários
+local_trabalho             # Locais de trabalho com coordenadas
+qrcode_session             # Sessões de QR Code com expiração
+registro_ponto             # Registros de ponto
+sessao_web                 # Sessões web para página de confirmação
+dispositivo_autorizacao    # Dispositivos autorizados por funcionário
+solicitacao_ajuste         # Solicitações de ajuste (implementação futura)
+```
+
+
+# Estrutura do Projeto
+
+```text
+
+## 🏗️ **ESTRUTURA DO PROJETO**
 
 ponto-eletronico/
 ├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── middleware/
-|   |   ├── models/
-│   │   ├── config/
-│   │   ├── utils/
-│   │   └── app.js
-│   ├── package.json
-│   └── .env
+│ ├── src/
+│ │ ├── controllers/
+│ │ │ ├── authController.js # Autenticação
+│ │ │ ├── funcionarioController.js # Gestão de funcionários
+│ │ │ ├── localController.js # Gestão de locais
+│ │ │ ├── qrcodeController.js # QR Code (público e admin)
+│ │ │ └── pontoController.js # Registro e consultas
+│ │ ├── routes/
+│ │ │ ├── authRoutes.js
+│ │ │ ├── funcionarioRoutes.js
+│ │ │ ├── localRoutes.js
+│ │ │ ├── qrcodeRoutes.js
+│ │ │ ├── pontoRoutes.js
+│ │ │ └── mainRoutes.js
+│ │ ├── middleware/
+│ │ │ └── auth.js # Middleware JWT
+│ │ ├── config/
+│ │ │ ├── database.js # Config SQLite
+│ │ │ ├── setupDatabase.js # Criação de tabelas
+│ │ │ └── seed.js # Dados iniciais
+│ │ ├── utils/
+│ │ │ └── helpers.js # Hash, JWT, QR Code, validação
+│ │ └── app.js # Aplicação principal
+│ ├── public/
+│ │ ├── terminal.html # Terminal coletivo
+│ │ └── confirmar.html # Página de confirmação
+│ ├── testes/
+│ │ ├── teste-completo.js # Teste fluxo completo
+│ │ ├── teste-fluxo-web.js # Teste fluxo web
+│ │ └── debug-token.js # Debug tokens
+│ ├── package.json
+│ └── .env
 
 ```
 
+# 🚀 COMO EXECUTAR
+
+## Pré-requisitos
+
+- Node.js 16+
+- npm ou yarn
+
+## Instalação
+```bash
+cd backend
+npm install
+```
+## Configuração
+```bash
+cp .env.example .env
+# Edite .env com suas configurações
+```
+
+## Inicialização do Banco
+```bash
+# Criação das tabelas e dados iniciais
+npm run reset-database
+# Ou apenas seed
+node src/config/seed.js
+```
+
+## Execução
+```bash
+# Modo desenvolvimento
+npm run dev
+
+# Modo produção
+npm start
+```
+
+## Acesso
+
+- API: http://localhost:3000/api
+- Terminal Coletivo: http://localhost:3000/terminal
+- Documentação: Este README
+
+## 🧪 TESTES
+
+### Teste do Fluxo Completo
+```bash
+node testes/teste-completo.js
+```
+
+### Teste do Fluxo Web
+```bash
+node testes/teste-fluxo-web.js
+```
+
+### Credenciais de Teste
+```text
+Admin: admin@email.com / admin123
+Funcionário: carlos.silva@email.com / senha123
+```
+
+# 📊 ESTADO ATUAL
+
+## ✅ Completamente Funcional
+
+- Backend API REST completa
+- Sistema de autenticação JWT
+- Gestão de funcionários e locais
+- Geração e validação de QR Codes
+- Terminal coletivo (HTML)
+- Página web de confirmação (Vue.js)
+- Registro de ponto com validação
+- Histórico e consultas
+- Sistema de sessões web
+- Registro de dispositivos autorizados
+
+## 🔄 Em Desenvolvimento
+
+- Dashboard administrativo (React)
+- App mobile (React Native)
+- Relatórios avançados (PDF/Excel)
+- Sistema de notificações
+- Integração com biometria/RFID
+
+# 🛠️ TECNOLOGIAS UTILIZADAS
+## Backend
+
+- Node.js - Ambiente de execução
+- Express - Framework web
+- SQLite - Banco de dados
+- JWT - Autenticação
+- bcrypt - Hash de senhas
+- QRCode - Geração de QR Codes
+
+## Frontend (Páginas Web)
+
+- HTML5/CSS3 - Estrutura e estilo
+- JavaScript (ES6+) - Lógica cliente
+- Vue.js 3 - Framework para página de confirmação
+
+## Ferramentas
+
+- Nodemon - Reinício automático em dev
+- dotenv - Gerenciamento de variáveis
+- crypto - Geração de tokens seguros
+
+# 📈 PRÓXIMAS ETAPAS
+
+## Curto Prazo
+
+- Dashboard Admin com React
+- Relatórios básicos em PDF
+- Exportação de dados (CSV/Excel)
+- Sistema de notificações por e-mail
+
+## Médio Prazo
+
+- App mobile nativo (React Native)
+- Integração com biometria
+- Sistema de turnos e escalas
+- Controle de horas extras
+
+## Longo Prazo
+
+- Machine Learning para detectar padrões
+- Integração com sistemas de RH
+- Versão multi-empresa
+- API pública para integrações
+
+# 🤝 CONTRIBUIÇÃO
+
+- Fork o repositório
+- Crie uma branch (git checkout -b feature/nova-funcionalidade)
+- Commit suas mudanças (git commit -am 'Adiciona nova funcionalidade')
+- Push para a branch (git push origin feature/nova-funcionalidade)
+- Crie um Pull Request
+
+# 📄 LICENÇA
+
+Este projeto está licenciado sob a MIT License 
+
+# 📞 SUPORTE
+
+Para suporte, abra uma issue no GitHub ou entre em contato com a equipe de desenvolvimento.
+
+**Desenvolvido com ❤️ para modernizar o controle de ponto eletrônico** 
+
+Última atualização: 7 de Dezembro 2025
