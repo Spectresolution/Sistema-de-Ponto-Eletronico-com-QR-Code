@@ -343,4 +343,9 @@ Para suporte, abra uma issue no GitHub ou entre em contato com a equipe de desen
 
 **Desenvolvido com ❤️ para modernizar o controle de ponto eletrônico** 
 
+# Me Patrocine 🥹
+
+[Visite meu sponsors e me dá uma forcinha](https://github.com/sponsors/Pucapuka)
+ou via pix solucoes.magic.ti@gmail.com
+
 Última atualização: 7 de Dezembro 2025
