@@ -1,0 +1,18 @@
+FROM node:20
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+# Copia todo o backend
+COPY . .
+
+# Instala nodemon globalmente
+RUN npm install -g nodemon
+
+EXPOSE 3000
+
+# Usa nodemon para hot reload
+CMD ["nodemon", "--legacy-watch", "app.js"]

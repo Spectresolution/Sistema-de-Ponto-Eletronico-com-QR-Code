@@ -1,0 +1,18 @@
+version: "3.9"  # versão moderna, evita warnings antigos
+
+services:
+  backend:
+    container_name: sistema_ponto_backend
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"   # mapeia porta do container para host
+    volumes:
+      - ./src:/app/src      # código fonte sincronizado
+      - ./data:/app/data    # banco SQLite persistente
+      - ./.env:/app/.env    # arquivo de variáveis de ambiente
+    environment:
+      - NODE_ENV=development
+      - DOCKERFILE=Dockerfile.dev
+    command: nodemon src/app.js
