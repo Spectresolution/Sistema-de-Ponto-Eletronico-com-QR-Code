@@ -237,6 +237,18 @@ npm start
 
 - API: http://localhost:3000/api
 - Terminal Coletivo: http://localhost:3000/terminal
+- Docker Image: https://hub.docker.com/repository/docker/pauloandersonlima/sistema-ponto-eletronico/tags
+ou 
+```bash
+docker pull pauloandersonlima/sistema-ponto-eletronico:dev
+```
+OBS.: Para rodar um container a partir do repositório:
+
+```bash
+docker run -it -p 3000:3000 pauloandersonlima/
+sistema-ponto-eletronico:dev
+```
+
 - Documentação: Este README
 
 ## 🧪 TESTES
@@ -271,6 +283,7 @@ Funcionário: carlos.silva@email.com / senha123
 - Histórico e consultas
 - Sistema de sessões web
 - Registro de dispositivos autorizados
+- Container Docker :dev
 
 ## 🔄 Em Desenvolvimento
 
@@ -301,6 +314,10 @@ Funcionário: carlos.silva@email.com / senha123
 - Nodemon - Reinício automático em dev
 - dotenv - Gerenciamento de variáveis
 - crypto - Geração de tokens seguros
+
+## Docker
+
+- Imagem disponível em acesso (acima)
 
 # 📈 PRÓXIMAS ETAPAS
 
@@ -343,7 +360,7 @@ Para suporte, abra uma issue no GitHub ou entre em contato com a equipe de desen
 
 **Desenvolvido com ❤️ para modernizar o controle de ponto eletrônico** 
 
-# Me Patrocine 🥹
+# 🥹 Me Patrocine 
 
 Visite meu [sponsors](https://github.com/sponsors/Pucapuka) e me dá uma forcinha
 ou via pix solucoes.magic.ti@gmail.com

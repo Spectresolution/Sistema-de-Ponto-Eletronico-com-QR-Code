@@ -10,13 +10,13 @@
     "Fluxo",
     "Funcionários"
   ],
-  "homepage": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code#readme",
+  "homepage": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletronico-com-QR-Code",
   "bugs": {
-    "url": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code/issues"
+    "url": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletronico-com-QR-Code/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Spectresolution/Sistema-de-Ponto-Eletr-nico-com-QR-Code.git"
+    "url": "https://github.com/Spectresolution/Sistema-de-Ponto-Eletronico-com-QR-Code.git"
   },
   "license": "ISC",
   "author": "SpectreSolution Tm.",
