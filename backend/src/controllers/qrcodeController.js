@@ -45,7 +45,7 @@ const gerarQRCodePublico = async (req, res) => {
     );
 
     // URL para a página de confirmação
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const confirmUrl = `${baseUrl}/confirmar?token=${session_token}`;
     
     //provisório

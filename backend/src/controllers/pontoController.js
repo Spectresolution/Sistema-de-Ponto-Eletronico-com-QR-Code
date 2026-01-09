@@ -147,7 +147,7 @@ const loginWeb = async (req, res) => {
     const user = result.rows[0];
 
     // Verificar senha
-    const senhaValida = await comparePassword(senha, user.senha_hash);
+    const senhaValida = await comparePassword(senha.trim(), user.senha_hash);
     if (!senhaValida) {
       return res.status(401).json({ 
         success: false,

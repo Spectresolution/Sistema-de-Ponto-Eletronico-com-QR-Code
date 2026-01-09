@@ -233,12 +233,8 @@ npm run dev
 npm start
 ```
 
-## Acesso
+## 🐋 Acessando a imagem do docker
 
-- API: http://localhost:3000/api
-- Terminal Coletivo: http://localhost:3000/terminal
-- Docker Image: https://hub.docker.com/repository/docker/pauloandersonlima/sistema-ponto-eletronico/tags
-ou 
 ```bash
 docker pull pauloandersonlima/sistema-ponto-eletronico:dev
 ```
@@ -249,7 +245,75 @@ docker run -it -p 3000:3000 pauloandersonlima/
 sistema-ponto-eletronico:dev
 ```
 
-- Documentação: Este README
+## 📡 Acessando o backend via IP da máquina
+
+Se você estiver usando Docker ou rodando o backend localmente em outra máquina da rede, siga estas instruções para acessar a API:
+
+### 1️⃣ Descobrir o IP da máquina
+
+* **Linux / macOS**:
+
+```bash
+# Mostra o IP da interface de rede ativa
+ip addr show
+# ou
+ifconfig
+```
+
+Procure o endereço **inet** da interface conectada à rede local (ex: `192.168.0.15`).
+
+* **Windows**:
+
+```powershell
+ipconfig
+```
+
+Procure o endereço IPv4 da sua conexão ativa (ex: `192.168.0.15`).
+
+> ⚠️ Não use `127.0.0.1` ou `localhost` se estiver acessando de outro dispositivo, pois eles apontam para o próprio dispositivo.
+
+---
+
+### 2️⃣ Testar a API no navegador ou Postman
+
+Se a máquina com o backend estiver rodando na porta **3000**, acesse:
+
+```
+http://<IP_DA_MAQUINA>:3000/health
+```
+
+Exemplo:
+
+```
+http://192.168.0.15:3000/health
+```
+
+Você deverá ver algo como:
+
+```json
+{
+  "status": "OK",
+  "timestamp": "2026-01-09T12:00:00.000Z",
+  "environment": "development"
+}
+```
+
+Para acessar os endpoints da API:
+
+```
+http://<IP_DA_MAQUINA>:3000/api/...
+```
+
+---
+
+### 3️⃣ Observações importantes
+
+* Certifique-se de que o firewall da máquina permite conexões na porta **3000**.
+* Se estiver usando Docker, a porta já deve estar mapeada via `-p 3000:3000` no `docker run` ou `docker-compose.yml`.
+* Qualquer outro dev que receber o código ou Docker poderá usar o mesmo procedimento para acessar a API da rede local.
+
+---
+
 
 ## 🧪 TESTES
 
@@ -284,10 +348,12 @@ Funcionário: carlos.silva@email.com / senha123
 - Sistema de sessões web
 - Registro de dispositivos autorizados
 - Container Docker :dev
+- Conexão de aparelho externo
 
-## 🔄 Em Desenvolvimento
+## 🔄 Próximos passos
 
-- Dashboard administrativo (React)
+- Interface frontend para Cadastro de Funcionários
+- Dashboard administrativo
 - App mobile (React Native)
 - Relatórios avançados (PDF/Excel)
 - Sistema de notificações
@@ -324,6 +390,7 @@ Funcionário: carlos.silva@email.com / senha123
 ## Curto Prazo
 
 - Dashboard Admin com React
+- Interface para criação / edição de usuários
 - Relatórios básicos em PDF
 - Exportação de dados (CSV/Excel)
 - Sistema de notificações por e-mail
