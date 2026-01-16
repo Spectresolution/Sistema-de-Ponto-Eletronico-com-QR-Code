@@ -1,12 +1,13 @@
 const { pool } = require('../config/database');
 const { gerarQRCode } = require('../utils/helpers');
+const { getRequestHost } = require('../utils/requestHost');
 const crypto = require('crypto');
 
 // ==================== 1. QR CODE PARA TERMINAL COLETIVO ====================
 const gerarQRCodePublico = async (req, res) => {
   try {
     const { local_trabalho_id } = req.body;
-
+    
     console.log('=== GERANDO QR CODE PÚBLICO (TERMINAL) ===');
 
     if (!local_trabalho_id) {
@@ -45,9 +46,23 @@ const gerarQRCodePublico = async (req, res) => {
     );
 
     // URL para a página de confirmação
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const confirmUrl = `${baseUrl}/confirmar?token=${session_token}`;
+
+    const frontendBaseUrl = process.env.FRONTEND_BASE_URL;
+
+    if (!frontendBaseUrl) {
+      console.error('❌ FRONTEND_BASE_URL não definido no .env');
+      return res.status(500).json({
+        success: false,
+        message: 'Erro de configuração: FRONTEND_BASE_URL não definido'
+      });
+    }
+
+    //const baseUrl = getRequestHost(req); //está retornando um ip do docker
+    const confirmUrl = `${frontendBaseUrl}/confirmar?token=${session_token}`;
     
+    //DEBUG PARA AJUDAR NO DOCKER(deletar depois)
+    console.log('[BASE URL]', getRequestHost(req));
+
     //provisório
     console.log('🔗 URL gerada:', confirmUrl);
 

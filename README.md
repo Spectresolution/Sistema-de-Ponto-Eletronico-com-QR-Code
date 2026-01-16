@@ -25,7 +25,7 @@ POST    /api/auth/login              // Login funcionário/admin - Retorna token
 ### 2. Sistema de QR Code Dinâmico (/api/qrcode)
 ```javascript
 
-POST /api/qrcode/gerar // Admin: Gera QR Code (2 minutos)
+POST /api/qrcode/gerar // Admin: Gera QR Code (5 minutos)
 POST /api/qrcode/gerar-publico // Terminal: Gera QR Code público (5 minutos)
 POST /api/qrcode/validar // Valida QR Code (apenas verificação)
 POST /api/qrcode/verificar // Verifica disponibilidade do QR Code
@@ -94,13 +94,13 @@ POST    /api/relatorios/exportar     // Exportar em PDF/CSV
 ## 📱 FLUXO DE MARCACAO COM QR CODE
 
 ### **Terminal Coletivo** (Tablet/Computador)
-1. Acessa `http://localhost:3000/terminal`
+1. Acessa `http://<ip da máquina>:3000/terminal`
 2. Clique em "Gerar QR Code"
 3. QR Code é gerado com validade de 5 minutos
 
 ### **Funcionário** (Celular)
 1. Escaneia QR Code com câmera
-2. Abre página `http://localhost:3000/confirmar?token=ABC123`
+2. Abre página `http://<ip da máquina>:3000/confirmar?<token>`
 3. **Primeira vez**: Faz login com e-mail e senha
 4. **Próximas vezes**: Reconhece dispositivo automaticamente
 5. Confirma registro (entrada/saída automático)
@@ -194,7 +194,7 @@ ponto-eletronico/
 │ │ ├── teste-fluxo-web.js # Teste fluxo web
 │ │ └── debug-token.js # Debug tokens
 │ ├── package.json
-│ └── .env
+│ └── .env (deixei um arquivo .txt como exemplo para o dotenv é importante fazer um para que o frontend funcione adequadamente)
 
 ```
 

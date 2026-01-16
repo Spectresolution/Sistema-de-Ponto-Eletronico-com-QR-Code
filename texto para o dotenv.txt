@@ -1,0 +1,16 @@
+Este é uma estrutura exemplo para o .env, você deve ter um 
+arquivo .env com esses dados básicos
+
+# ===== Banco =====
+DB_TYPE=sqlite
+DB_FILE=./ponto_eletronico.db
+
+# ===== Segurança =====
+JWT_SECRET=<sua_chave_jwt_super_secreta>
+
+# ===== Servidor =====
+PORT=3000
+NODE_ENV=development
+
+# ===== FRONTEND (USADO NO QR CODE) =====
+FRONTEND_BASE_URL=http://<o ip do seu/sua computador/rede>:5173

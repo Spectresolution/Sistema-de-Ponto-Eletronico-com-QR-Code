@@ -1,0 +1,157 @@
+/*---------------------------------------
+ESTILIZAÇÃO DO TERMINAL
+------------------------------------------*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.container {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 1000px;
+    width: 100%;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-size: 2.2em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.2em;
+}
+
+.btn-gerar {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 15px 50px;
+    font-size: 1.4 em;
+    border-radius: 15px;
+    cursor: pointer;
+    margin: 0;
+    transition: all 0.3s;
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+}
+
+.btn-gerar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+}
+
+.btn-gerar:active {
+    transform: translateY(0);
+}
+
+.btn-gerar:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.qrcode-container {
+    margin: 30px 0;
+    padding: 30px;
+    border: 3px dashed #ddd;
+    border-radius: 15px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+}
+
+.qrcode-image {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    margin: 20px 0;
+}
+
+.timer {
+    font-size: 1.5em;
+    color: #333;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.timer.expired {
+    color: #f44336;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.info-box {
+    background: #e3f2fd;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
+    text-align: left;
+}
+
+.info-box h3 {
+    color: #1976d2;
+    margin-bottom: 10px;
+}
+
+.info-box ol {
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.status {
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    margin: 10px 0;
+    display: inline-block;
+}
+
+.status.active {
+    background: #4CAF50;
+    color: white;
+}
+
+.status.expired {
+    background: #f44336;
+    color: white;
+}
+
+.local-info {
+    background: #e8f5e9;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
