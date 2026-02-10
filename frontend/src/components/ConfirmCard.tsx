@@ -28,6 +28,7 @@ export default function ConfirmCard ({
                 <p><strong>Horário: </strong> {horario}</p>
                 <p><strong>Data: </strong> {data}</p>
                 <p><strong>Funcionário</strong> {funcionario}</p>
+                <p><strong>Cargo: </strong></p>
             </div>
 
             <button className="btn btn-success" onClick={onConfirm}>

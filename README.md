@@ -339,25 +339,16 @@ Funcionário: carlos.silva@email.com / senha123
 
 - Backend API REST completa
 - Sistema de autenticação JWT
-- Gestão de funcionários e locais
+- Gestão de funcionários e locais (Backend)
 - Geração e validação de QR Codes
-- Terminal coletivo (HTML)
-- Página web de confirmação (Vue.js)
+- Terminal coletivo (React.ts)
+- Página web de confirmação (React.ts)
 - Registro de ponto com validação
-- Histórico e consultas
-- Sistema de sessões web
-- Registro de dispositivos autorizados
+- Download do comprovante de registro em PDF
+- Histórico e consultas (Backend)
+- Sistema de sessões web 
 - Container Docker :dev
 - Conexão de aparelho externo
-
-## 🔄 Próximos passos
-
-- Interface frontend para Cadastro de Funcionários
-- Dashboard administrativo
-- App mobile (React Native)
-- Relatórios avançados (PDF/Excel)
-- Sistema de notificações
-- Integração com biometria/RFID
 
 # 🛠️ TECNOLOGIAS UTILIZADAS
 ## Backend
@@ -373,13 +364,14 @@ Funcionário: carlos.silva@email.com / senha123
 
 - HTML5/CSS3 - Estrutura e estilo
 - JavaScript (ES6+) - Lógica cliente
-- Vue.js 3 - Framework para página de confirmação
+- React.ts - Framework para as páginas
 
 ## Ferramentas
 
 - Nodemon - Reinício automático em dev
 - dotenv - Gerenciamento de variáveis
 - crypto - Geração de tokens seguros
+- jsPDF - Salva dados dos registros em PDF
 
 ## Docker
 
@@ -388,9 +380,10 @@ Funcionário: carlos.silva@email.com / senha123
 # 📈 PRÓXIMAS ETAPAS
 
 ## Curto Prazo
-
-- Dashboard Admin com React
-- Interface para criação / edição de usuários
+- Consertar a edição de registro de ponto (não está sendo registrado quando o funcionário entra/sai)
+- Sistema de notificações
+- Integração com biometria/RFID
+- Registro de dispositivos autorizados
 - Relatórios básicos em PDF
 - Exportação de dados (CSV/Excel)
 - Sistema de notificações por e-mail
@@ -404,6 +397,7 @@ Funcionário: carlos.silva@email.com / senha123
 
 ## Longo Prazo
 
+- Relatórios avançados (PDF/Excel)
 - Machine Learning para detectar padrões
 - Integração com sistemas de RH
 - Versão multi-empresa

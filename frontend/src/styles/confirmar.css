@@ -1,14 +1,8 @@
 /*---------------------------------
 ESTILIZAÇÃO DO CONFIRMAR
 -----------------------------------*/
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Arial, sans-serif;
-}
 
-body {
+.confirm-body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     display: flex;
@@ -17,7 +11,7 @@ body {
     padding: 20px;
 }
 
-.container {
+.confirm-container {
     background: white;
     border-radius: 20px;
     padding: 40px;

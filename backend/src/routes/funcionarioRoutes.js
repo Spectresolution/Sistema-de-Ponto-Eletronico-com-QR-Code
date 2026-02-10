@@ -40,4 +40,18 @@ router.post('/:id/tornar-gestor', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
+
+//rota para mudar o status do funcionário
+router.patch('/:id/folga', authMiddleware, gestorMiddleware, async (req, res) => {
+  const { folga } = req.body; // true ou false
+
+  await pool.query(
+    'UPDATE funcionario SET status_manual = ? WHERE id = ?',
+    [folga ? 'folga' : null, req.params.id]
+  );
+
+  res.json({ success: true });
+});
+
+
 module.exports = router;

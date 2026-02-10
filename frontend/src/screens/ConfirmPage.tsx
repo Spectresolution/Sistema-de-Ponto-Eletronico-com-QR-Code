@@ -186,43 +186,45 @@ export default function ConfirmPage() {
      RENDER
   ============================== */
   return (
-    <div className="container">
-      <div className="logo">
-        <h1>📍 Sistema de Ponto</h1>
-        <p>Confirmação de Registro</p>
+    <div className="confirm-body">
+      <div className="confirm-container">
+        <div className="logo">
+          <h1>📍 Sistema de Ponto</h1>
+          <p>Confirmação de Registro</p>
+        </div>
+
+         {tela === 'login' && (
+          <LoginForm
+            email={email}
+            senha={senha}
+            error={loginError}
+            onEmailChange={setEmail}
+            onSenhaChange={setSenha}
+            onSubmit={login}
+          />
+        )}
+
+        {tela === 'confirm' && usuario && (
+          <ConfirmCard
+            tipo={pontoData.tipo}
+            local={pontoData.local}
+            horario={pontoData.horario}
+            data={pontoData.data}
+            funcionario={usuario.nome}
+            onConfirm={confirmarPonto}
+            onCancel={() => window.close()}
+          />
+        )}
+
+        {tela === 'success' && comprovante && (
+          <SuccessCard comprovante={comprovante} />
+        )}
+
+        {tela === 'loading' && <Loading message={loadingMessage} />}
+
+        {tela === 'error' && <ErrorCard message={errorMessage} />}
+
       </div>
-
-       {tela === 'login' && (
-        <LoginForm
-          email={email}
-          senha={senha}
-          error={loginError}
-          onEmailChange={setEmail}
-          onSenhaChange={setSenha}
-          onSubmit={login}
-        />
-      )}
-
-      {tela === 'confirm' && usuario && (
-        <ConfirmCard
-          tipo={pontoData.tipo}
-          local={pontoData.local}
-          horario={pontoData.horario}
-          data={pontoData.data}
-          funcionario={usuario.nome}
-          onConfirm={confirmarPonto}
-          onCancel={() => window.close()}
-        />
-      )}
-
-      {tela === 'success' && comprovante && (
-        <SuccessCard comprovante={comprovante} />
-      )}
-
-      {tela === 'loading' && <Loading message={loadingMessage} />}
-
-      {tela === 'error' && <ErrorCard message={errorMessage} />}
-
     </div>
   );
 }

@@ -123,26 +123,70 @@ const listarFuncionarios = async (req, res) => {
     const { ativo } = req.query;
 
     let query = `
-      SELECT id, nome, cpf, matricula, email, cargo, departamento,
-             jornada_padrao_horas, data_contratacao, is_admin, is_gestor,
-             ativo, created_at
-      FROM funcionario`;
+      SELECT 
+        f.id,
+        f.nome,
+        f.cpf,
+        f.matricula,
+        f.email,
+        f.cargo,
+        f.departamento,
+        f.jornada_padrao_horas,
+        f.data_contratacao,
+        f.is_admin,
+        f.is_gestor,
+        f.ativo,
+        f.created_at,
+        f.status_manual,
+
+        (
+          SELECT rp.tipo_registro
+          FROM registro_ponto rp
+          WHERE rp.funcionario_id = f.id
+            AND DATE(rp.timestamp_registro) = DATE('now')
+          ORDER BY rp.timestamp_registro DESC
+          LIMIT 1
+        ) AS ultimo_tipo_hoje
+
+      FROM funcionario f
+    `;
+
     const params = [];
 
     if (ativo !== undefined) {
-      query += ` WHERE ativo = ?`;
+      query += ` WHERE f.ativo = ?`;
       params.push(ativo === 'true' ? 1 : 0);
     }
 
-    query += ` ORDER BY nome`;
+    query += ` ORDER BY f.nome`;
 
     const result = await pool.query(query, params);
 
+    const funcionarios = result.rows.map(f => {
+      let status = "FORA_DO_TURNO";
+
+      if (f.status_manual === "folga") {
+        status = "FOLGA";
+      } 
+      else if (f.ultimo_tipo_hoje === "entrada") {
+        status = "TRABALHANDO";
+      }
+      else if (f.ultimo_tipo_hoje === "saida") {
+        status = "FORA_DO_TURNO";
+      }
+
+      return {
+        ...f,
+        status_hoje: status
+      };
+    });
+
     res.json({
       success: true,
-      funcionarios: result.rows,
-      total: result.rows.length
+      funcionarios,
+      total: funcionarios.length
     });
+
   } catch (error) {
     console.error('❌ Erro ao listar funcionários:', error);
     res.status(500).json({
@@ -151,6 +195,8 @@ const listarFuncionarios = async (req, res) => {
     });
   }
 };
+
+
 
 //   Buscar por ID
 const buscarFuncionario = async (req, res) => {

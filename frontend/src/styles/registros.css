@@ -1,0 +1,56 @@
+.registros-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.registros-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  width: 100%;
+  max-width: 1000px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.registros-card h1 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #1e293b;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.acoes button {
+  margin: 0 5px;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.acoes button:hover {
+  opacity: 0.85;
+}
+
+/* Cores por tipo */
+.tipo-entrada { background: #dcfce7; }
+.tipo-saida { background: #fee2e2; }
+.tipo-intervalo { background: #fef9c3; }
+.tipo-retorno { background: #dbeafe; }
